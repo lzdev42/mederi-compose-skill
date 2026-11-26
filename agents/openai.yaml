@@ -1,0 +1,4 @@
+interface:
+  display_name: "mederi-compose-skill"
+  short_description: "Compose Multiplatform (Android, iOS, Desktop, wasmJs) skill — data-layer SSOT, MVI, UI container/layout discipline, Koin, and cross-platform guardrails"
+  default_prompt: "Use $mederi-compose-skill to build, refactor, or review Compose Multiplatform features across Android, iOS, Desktop, and wasmJs."
