@@ -100,41 +100,53 @@ class PlayerViewModel(private val player: Player) : ViewModel() {
 }
 ```
 
-### Pattern 2: expect/actual for Thin Primitives
+### Pattern 2: expect/actual for Thin Platform Primitives
 
-Stateless one-liners, no DI/interface/fakes:
+Stateless one-liners, no DI/interface/fakes. Note: do **not** use `expect/actual` for UUIDs or timestamps — use Kotlin stdlib `kotlin.uuid.Uuid` and `kotlin.time.Clock` / `kotlin.time.Instant` directly in `commonMain`:
 
 ```kotlin
 // commonMain
-expect fun randomUUID(): String
+expect fun platformName(): String
 
 // androidMain
-actual fun randomUUID(): String = java.util.UUID.randomUUID().toString()
+actual fun platformName(): String = "Android ${android.os.Build.VERSION.SDK_INT}"
 
 // iosMain
-actual fun randomUUID(): String = platform.Foundation.NSUUID().UUIDString()
+actual fun platformName(): String =
+    "${platform.UIKit.UIDevice.currentDevice.systemName()} ${platform.UIKit.UIDevice.currentDevice.systemVersion()}"
+
+// jvmMain
+actual fun platformName(): String = System.getProperty("os.name") ?: "Desktop"
+
+// wasmJsMain
+actual fun platformName(): String = "Web (wasmJs)"
 ```
 
-### Pattern 3: expect/actual with Typealias
+### Pattern 3: expect/actual with Platform Wrapper (Genuine OS Bridges Only)
 
-When a platform type already matches the contract:
+When wrapping a genuine OS capability without pulling platform types into shared APIs:
 
 ```kotlin
 // commonMain
-expect class PlatformDate {
-    fun toEpochMillis(): Long
+expect class ExternalUrlOpener {
+    fun open(url: String)
 }
 
-// jvmMain
-actual typealias PlatformDate = java.time.Instant
-
-// nativeMain
-actual class PlatformDate(private val nsDate: NSDate) {
-    actual fun toEpochMillis(): Long = (nsDate.timeIntervalSince1970 * 1000).toLong()
+// jvmMain (Desktop — unavoidable java.awt.Desktop encapsulated inside jvmMain impl)
+actual class ExternalUrlOpener {
+    actual fun open(url: String) {
+        if (java.awt.Desktop.isDesktopSupported()) {
+            java.awt.Desktop.getDesktop().browse(java.net.URI(url))
+        }
+    }
 }
 ```
 
-Prefer interface+DI for fakes or when types do not match 1:1.
+Prefer interface+DI for fakes or when lifecycle/async behavior is involved.
+
+### Kotlin/KMP-First on JVM & Android Too
+
+Even inside `jvmMain`, `desktopMain`, and `androidMain`, default to Kotlin stdlib and mature KMP libraries (`kotlin.time.Clock`/`Instant`, `kotlin.uuid.Uuid`, `kotlinx.serialization`, `kotlinx-io`, Ktor, Koin). Do **not** introduce Java/JDK libraries (e.g., Gson, Jackson, Guava, Apache Commons, direct OkHttp, `java.time`, `java.util.UUID`, `SimpleDateFormat`) unless **no mature Kotlin/KMP alternative exists** or when bridging genuine OS/JVM/Android platform APIs (e.g., desktop `java.awt.Desktop`, OS app-data paths, Android SDK APIs, or writing `jvmTest` PNG outputs). Keep any unavoidable `java.*` types strictly encapsulated inside platform implementations—never leak them into shared APIs.
 
 ### Bridge Anti-Patterns
 

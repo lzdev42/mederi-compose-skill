@@ -2,7 +2,7 @@
 name: mederi-compose-skill
 license: MIT
 metadata:
-  version: "0.1.1"
+  version: "0.1.2"
 description: >
   Auto-activate whenever creating, editing, refactoring, reviewing, or debugging
   any Compose Multiplatform (CMP) UI, layouts, components, themes, state flows,
@@ -35,6 +35,7 @@ Target **Android, iOS, Desktop (JVM), and Web (`wasmJs`)** from `commonMain` by 
    - **Persistence**: DataStore 1.3.0+ supports `wasmJsMain` (`WebLocalStorage`); Room 3.0+ (`androidx.room3` + `WebWorkerSQLiteDriver`) supports `wasmJs`, whereas Room 2.x does **not** (isolate Room 2.x outside `wasmJs`).
    - **Dynamic Color**: Android 12+ optional enhancement only; always ship a full static cross-platform Theme.
    - **Fonts**: CMP **1.12.0+** supports automatic on-demand Noto font fallback on web (CJK/emoji without bundling; allow `fonts.gstatic.com` in CSP). Bundle via `Res.font` (or `FontFamily.Resolver.preload()`) only for CMP `< 1.12.0`, custom brand fonts, or offline/restricted networks.
+4. **Kotlin/KMP-First on JVM & Android Too**: Even inside `jvmMain`, `desktopMain`, and `androidMain`, default to Kotlin stdlib and mature KMP libraries (`kotlin.time.Clock`/`Instant`, `kotlin.uuid.Uuid`, `kotlinx.serialization`, `kotlinx-io`, Ktor, Koin). Do **not** introduce Java/JDK libraries (e.g., Gson, Jackson, Guava, Apache Commons, direct OkHttp, `java.time`, `java.util.UUID`, `SimpleDateFormat`) unless **no mature Kotlin/KMP alternative exists** or when bridging genuine OS/JVM/Android platform APIs (e.g., desktop `java.awt.Desktop`, OS app-data paths, Android SDK APIs, or writing `jvmTest` PNG outputs). Keep any unavoidable `java.*` types strictly encapsulated inside platform implementations—never leak them into shared APIs.
 
 ## Architecture: Data-Layer SSOT + MVI (MVVM Compatible)
 

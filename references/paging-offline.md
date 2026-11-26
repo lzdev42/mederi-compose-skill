@@ -12,10 +12,11 @@ Override `initialize()` to control whether RemoteMediator triggers a remote refr
 ```kotlin
 @OptIn(ExperimentalPagingApi::class)
 override suspend fun initialize(): InitializeAction {
-    val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
+    val cacheTimeoutMs = 3_600_000L // 1 hour (or 1.hours.inWholeMilliseconds)
     val lastUpdated = db.remoteKeyDao().getLastUpdated("items") ?: 0L
+    val nowMs = kotlin.time.Clock.System.now().toEpochMilliseconds()
 
-    return if (System.currentTimeMillis() - lastUpdated < cacheTimeout) {
+    return if (nowMs - lastUpdated < cacheTimeoutMs) {
         InitializeAction.SKIP_INITIAL_REFRESH
     } else {
         InitializeAction.LAUNCH_INITIAL_REFRESH
@@ -35,12 +36,14 @@ override suspend fun initialize(): InitializeAction {
 class ItemRemoteMediator(
     private val api: ItemApi,
     private val db: AppDatabase,
+    private val clock: kotlin.time.Clock = kotlin.time.Clock.System,
 ) : RemoteMediator<Int, ItemEntity>() {
 
     override suspend fun initialize(): InitializeAction {
         val lastUpdated = db.remoteKeyDao().getLastUpdated("items") ?: 0L
-        val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
-        return if (System.currentTimeMillis() - lastUpdated < cacheTimeout) {
+        val cacheTimeoutMs = 3_600_000L
+        val nowMs = clock.now().toEpochMilliseconds()
+        return if (nowMs - lastUpdated < cacheTimeoutMs) {
             InitializeAction.SKIP_INITIAL_REFRESH
         } else {
             InitializeAction.LAUNCH_INITIAL_REFRESH
@@ -73,7 +76,7 @@ class ItemRemoteMediator(
                     RemoteKey(
                         id = "items",
                         nextPage = if (response.items.isEmpty()) null else page + 1,
-                        lastUpdated = System.currentTimeMillis(),
+                        lastUpdated = clock.now().toEpochMilliseconds(),
                     )
                 )
             }
@@ -110,7 +113,7 @@ The `PagingSource` reads from Room. The `RemoteMediator` fetches from network an
 data class RemoteKey(
     @PrimaryKey val id: String,
     val nextPage: Int?,
-    val lastUpdated: Long = System.currentTimeMillis(),
+    val lastUpdated: Long = kotlin.time.Clock.System.now().toEpochMilliseconds(),
 )
 
 @Dao

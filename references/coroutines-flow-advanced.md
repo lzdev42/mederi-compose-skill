@@ -29,9 +29,10 @@ queryFlow
 `flowOn` changes the dispatcher for upstream operators and automatically buffers at the context switch:
 
 ```kotlin
-repository.observeProducts()        // runs on IO
-    .map { it.toDomain() }           // runs on IO
-    .flowOn(Dispatchers.IO)           // everything above runs on IO
+// Inject workDispatcher (default Dispatchers.Default in commonMain; Dispatchers.IO does NOT exist on wasmJs)
+repository.observeProducts()        // runs on workDispatcher
+    .map { it.toDomain() }           // runs on workDispatcher
+    .flowOn(workDispatcher)          // everything above runs on workDispatcher
     .collect { updateUi(it) }         // runs on caller's dispatcher (Main)
 ```
 
