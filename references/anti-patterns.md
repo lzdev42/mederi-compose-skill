@@ -32,6 +32,7 @@ For overengineering patterns (bloated base classes, unnecessary use cases, 4-typ
 | Copying SSOT in `init` (`.first()`/`.value`), copying props into `remember { mutableStateOf(initial) }`, or accessing Store in `@Composable` | stale snapshots, cross-screen drift, bypasses ViewModel derivation | upstream `.map().distinctUntilChanged()` + `combine` + `stateIn` in ViewModel | [architecture.md](architecture.md) |
 | Hand-built JSON strings, silent business fallback values, or displaying `0` on error | brittle parsing, hides real bugs, `0` masquerades as valid data | `@Serializable` models + `kotlinx.serialization`, `-` placeholder + explicit error feedback | [networking-ktor-architecture.md](networking-ktor-architecture.md) |
 | Triggering one-shot side effects (snackbar, toast, navigation) directly in `@Composable` render body | re-fires on recomposition, unpredictable behavior | emit `Effect` via `Channel` and handle in `CollectEffect` | [mvi.md](mvi.md) |
+| Wrapping a bottom-anchored or toolbar-bearing container in `Modifier.animateContentSize()` | outer clip lags behind inner layout from `TopStart`, causing bottom action bars to dip and clip | keep outer surface static; animate only changing inner slots (`animateDpAsState` / `AnimatedVisibility`) | [animations.md](animations.md) |
 
 ## Examples
 

@@ -20,7 +20,8 @@ References:
 | Infinite repeat? | `rememberInfiniteTransition` |
 | Switching composables? | `AnimatedContent` or `Crossfade` |
 | Appear/disappear? | `AnimatedVisibility` |
-| Size change? | `Modifier.animateContentSize()` |
+| Simple single-block size change (no fixed toolbars, top-aligned)? | `Modifier.animateContentSize()` |
+| Composite container / bottom-anchored growth (composer, docked bar)? | Per-slot `AnimatedVisibility(expandVertically/shrinkVertically)` + `animateDpAsState` (no outer `animateContentSize`) |
 | Multiple props together? | `updateTransition` |
 | Different timing per prop? | `Animatable` with sequential `animateTo` |
 | Single prop with target? | `animate*AsState` |
@@ -182,6 +183,7 @@ AnimatedContent(
 | `Modifier.scale()`/`.offset()` | Recomposition every frame | `graphicsLayer { scaleX = ...; translationX = ... }` |
 | Animating every change | Jittery UI | Animate meaningful transitions only |
 | `animateContentSize` after size modifiers | No effect | Place BEFORE `size`/`fillMaxWidth` |
+| Outer `animateContentSize()` on composite / bottom-anchored container | Inner layout jumps on frame 1 while outer clip lags from `TopStart`, making bottom buttons dip & bounce | Keep outer surface static; animate only changing inner slots (`animateDpAsState` / `AnimatedVisibility`) |
 | Outer variable in AnimatedContent | Stale during exit | Use lambda parameter |
 | `tween`/`snap` everywhere | Jarring interruption | Prefer `spring` |
 | Animating padding/size every frame | Expensive Layout phase | Prefer `graphicsLayer` transforms |

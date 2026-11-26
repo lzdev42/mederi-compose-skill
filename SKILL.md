@@ -2,7 +2,7 @@
 name: mederi-compose-skill
 license: MIT
 metadata:
-  version: "0.1.2"
+  version: "0.1.3"
 description: >
   Auto-activate whenever creating, editing, refactoring, reviewing, or debugging
   any Compose Multiplatform (CMP) UI, layouts, components, themes, state flows,
@@ -66,6 +66,9 @@ Target **Android, iOS, Desktop (JVM), and Web (`wasmJs`)** from `commonMain` by 
    - Shared spacing/radii, typography, colors, thresholds, JSON keys, and copy come from Theme tokens, named constants, `Res.*`, or SSOT (exempt: token definitions, structural literals `0`/`1`/booleans/`weight(1f)`/`maxLines = 1`, trivial one-off tweaks).
    - Structured data uses `@Serializable` + `kotlinx.serialization` only (**forbidden**: hand-built/regex JSON).
    - Never crash, swallow errors, or fabricate fallback defaults. Render **`-`** (or `--`) for failed/missing **both numeric and text** fields (**never `0`**), paired with explicit error UI or MVI `Effect` (never trigger side effects inside `@Composable` bodies).
+5. **Anchored & Composite Container Animations (No Outer `animateContentSize()`)**:
+   - **Forbidden** on any composite container with fixed chrome (top/bottom toolbars) or bottom/end-anchored growth (chat composers, floating bars, docked bars): `Modifier.animateContentSize()` clips from `TopStart` behind inner layout and makes bottom buttons dip and bounce.
+   - Keep the outer container static chrome (shape/background/border only); animate only changing inner slots via `animateDpAsState` or `AnimatedVisibility(expandVertically/shrinkVertically)` (retaining last non-empty data during exit, honoring `reducedMotion`).
 
 ## Visual Artifacts (Headless Screenshots for Human Review)
 
